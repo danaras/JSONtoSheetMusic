@@ -23,7 +23,7 @@ float measureTime = (60/tempo)*2; //seconds
 float staffTime = measureTime*measuresPerStaff;
 
 void setup() {
-
+size(450, 600);
 json = loadJSONObject("midi.json");
 
 drawSheetMusic();
@@ -82,6 +82,7 @@ float noteLocationOnStaff(int midiNote){
 	int d4re = 62;
 	int d4reIndex = 24;
 	float y = -noteHeight/8;
+	//TODO: add sharps and return notes to natural
 	for (int i=0; i<notes.length; i++){
 		if(midiNote==notes[i]){
 			// println("yeees");
@@ -118,6 +119,10 @@ void drawNotes(JSONObject note){
 		float finalY = noteLocationOnStaff(midi)+y;
 		float x = map(time-(staffNo-1)*staffTime, 0, staffTime, borderMargin+staffHeight, width-borderMargin-4*staffGap);
 		PShape noteSvg = whichNote(duration);
+		noteSvg.disableStyle();
+		svg.fill(0, 0, 0);
+		svg.noStroke();
+
 		svg.shape(noteSvg, x, finalY, noteWidth, noteHeight);
 
 	}
@@ -144,7 +149,13 @@ void drawSheetMusic(){
 		}
 	svg.dispose();
 	svg.endDraw();
+	PShape finalDrawing = loadShape("output.svg");
+	shape(finalDrawing,0,0,450,600);
+	// image(svg, 0, 0);
 
 }
 // Sketch prints:
 // 0, Panthera leo, Lion
+// void draw() {
+//   image(svg, 0, 0);
+// }
