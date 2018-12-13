@@ -1,4 +1,6 @@
 import processing.svg.*;
+import java.util.Date;
+
 JSONObject json;
 int ppi = 300;
 int width = 9*ppi; //9*300
@@ -22,11 +24,13 @@ float tempo = 234; //quarter notes per minute
 float measureTime = (60/tempo)*2; //seconds
 float staffTime = measureTime*measuresPerStaff;
 
+
 void setup() {
 size(450, 600);
 json = loadJSONObject("midi.json");
-
+printSvgSizes();
 drawSheetMusic();
+
 }
 void drawStaffLines(int staffGp, int LocY){
 	for (int i=0; i<5; i++){
@@ -52,27 +56,101 @@ void drawClefs(float x, float y){
 // void isItNote(int midiNote){
 //
 // }
-PShape whichNote(float duration){
-	// for (int i; i < noteFiles)
-	String fileName;
-	if (duration <= 0.008){
-		fileName = "note-128.svg";
-	}else if(duration <= 0.016){
-		fileName = "note-64.svg";
-	}else if(duration <= 0.032){
-		fileName = "note-32.svg";
-	}else if(duration <= 0.064){
-		fileName = "note-16.svg";
-	}else if(duration <= 0.128){
-		fileName = "note-8.svg";
-	}else if(duration <= 0.256){
-		fileName = "note-4.svg";
-	}else if(duration <= 0.512){
-		fileName = "note-2.svg";
-	}else{// check if there are too long notes where you will need to combine more than one full notes
-		fileName = "note-1.svg";
+String[] listFileNames(String dir) {
+  File file = new File(dir);
+  if (file.isDirectory()) {
+    String names[] = file.list();
+    return names;
+  } else {
+    // If it's not a directory
+    return null;
+  }
+}
+void printSvgSizes(){
+	String path = sketchPath();
+	String[] filenames = listFileNames(path+"/data/notes");
+	int i = 1;
+	for (String file : filenames){
+
+		if (file.contains(".DS_")){
+			continue;
+		}
+		PShape s = loadShape("notes/"+file);
+		println(i+": "+file +"| width: "+s.width+", height: "+s.height);
+		i++;
 	}
-	return loadShape(fileName);
+}
+String[] whichNote(float duration){
+	// for (int i; i < noteFiles)
+	String[] fileNames = new String[2];
+	if (duration <= 0.008){
+		fileNames[0] = "Quintuple-croche_tête_en_bas.svg";
+		fileNames[1] = "Quintuple-croche.svg";
+	}else if(duration <= 0.016){
+		fileNames[0] = "Quadruple-croche_tête_en_bas.svg";
+		fileNames[1] = "Quadruple-croche.svg";
+	}else if(duration <= 0.024){//.
+		fileNames[0] = "Quadruple-croche_pointée_tête_en_bas.svg";
+		fileNames[1] = "Quadruple-croche_pointée.svg";
+	}else if(duration <= 0.028){//..
+		fileNames[0] = "Quadruple-croche_doublement_pointée_tête_en_bas.svg";
+		fileNames[1] = "Quadruple-croche_doublement_pointée.svg";
+	}else if(duration <= 0.032){
+		fileNames[0] = "Triple-croche_tête_en_bas.svg";
+		fileNames[1] = "Triple-croche.svg";
+	}else if(duration <= 0.048){//.
+		fileNames[0] = "Triple-croche_pointée_tête_en_bas.svg";
+		fileNames[1] = "Triple-croche_pointée.svg";
+	}else if(duration <= 0.056){//..
+		fileNames[0] = "Triple-croche_doublement_pointée_tête_en_bas.svg";
+		fileNames[1] = "Triple-croche_doublement_pointée.svg";
+	}else if(duration <= 0.064){
+		fileNames[0] = "Double-croche_tête_en_bas.svg";
+		fileNames[1] = "Double-croche.svg";
+	}else if(duration <= 0.096){//.
+		fileNames[0] = "Double-croche_pointée_tête_en_bas.svg";
+		fileNames[1] = "Double-croche_pointée.svg";
+	}else if(duration <= 0.112){//..
+		fileNames[0] = "Double-croche_doublement_pointée_tête_en_bas.svg";
+		fileNames[1] = "Double-croche_doublement_pointée.svg";
+	}else if(duration <= 0.128){
+		fileNames[0] = "Croche_tête_en_bas.svg";
+		fileNames[1] = "Croche.svg";
+	}else if(duration <= 0.192){//.
+		fileNames[0] = "Croche_pointée_tête_en_bas.svg";
+		fileNames[1] = "Croche_pointée.svg";
+	}else if(duration <= 0.224){//..
+		fileNames[0] = "Croche_doublement_pointée_tête_en_bas.svg";
+		fileNames[1] = "Croche_doublement_pointée.svg";
+	}else if(duration <= 0.256){
+		fileNames[0] = "Noire_tête_en_bas.svg";
+		fileNames[1] = "Noire.svg";
+	}else if(duration <= 0.384){//.
+		fileNames[0] = "Noire_pointée_tête_en_bas.svg";
+		fileNames[1] = "Noire_pointée.svg";
+	}else if(duration <= 0.448){//..
+		fileNames[0] = "Noire_doublement_pointée_tête_en_bas.svg";
+		fileNames[1] = "Noire_doublement_pointée.svg";
+	}else if(duration <= 0.512){
+		fileNames[0] = "Blanche_tête_en_bas.svg";
+		fileNames[1] = "Blanche.svg";
+	}else if(duration <= 0.768){//.
+		fileNames[0] = "Blanche_pointée_tête_en_bas.svg";
+		fileNames[1] = "Blanche_pointée.svg";
+	}else if(duration <= 0.896){//..
+		fileNames[0] = "Blanche_doublement_pointée_tête_en_bas.svg";
+		fileNames[1] = "Blanche_doublement_pointée.svg";
+	}else if(duration <= 1.024){
+		fileNames[0] = "Ronde_tête_en_bas.svg";
+		fileNames[1] = "Ronde.svg";
+	}else if(duration <= 3.072){//.
+		fileNames[0] = "Ronde_pointée_tête_en_bas.svg";
+		fileNames[1] = "Ronde_pointée.svg";
+	}else{//..
+		fileNames[0] = "Ronde_doublement_pointée_tête_en_bas.svg";
+		fileNames[1] = "Ronde_doublement_pointée.svg";
+	}
+	return fileNames;
 }
 float noteLocationOnStaff(int midiNote){
 	int treble = 67;
@@ -96,7 +174,7 @@ float noteLocationOnStaff(int midiNote){
 		// 	println(i);
 		// }
 	}
-	println(midiNote+", "+y);
+	// println(midiNote+", "+y);
 	return y;
 }
 void drawNotes(JSONObject note){
@@ -116,14 +194,26 @@ void drawNotes(JSONObject note){
 		int staffNo = int(time/staffTime)+1;
 		// println(time+", staffno: "+staffNo);
 		float y = (staffNo-1)*(staffHeight+spaceBetweenStaffs)+borderMargin;
-		float finalY = noteLocationOnStaff(midi)+y;
+		float noteYonStaff = noteLocationOnStaff(midi);
+		float finalY = noteYonStaff +y;
 		float x = map(time-(staffNo-1)*staffTime, 0, staffTime, borderMargin+staffHeight, width-borderMargin-4*staffGap);
-		PShape noteSvg = whichNote(duration);
+		String[] notefiles = whichNote(duration);
+		String filename;
+		if(noteLocationOnStaff(midi)>staffHeight/2){
+			filename = notefiles[0];
+		}else{
+			filename = notefiles[1];
+		}
+		PShape noteSvg=loadShape("notes/"+filename);
 		noteSvg.disableStyle();
-		svg.fill(0, 0, 0);
+		noteSvg.setFill(color(0,0,0));
+		svg.fill(0,0,0);
 		svg.noStroke();
-
-		svg.shape(noteSvg, x, finalY, noteWidth, noteHeight);
+		// for(int i =0; i<noteSvg.getChildCount(); i++){
+		// 	println(i);
+		// }
+		// println(midi+", "+noteSvg.getChildCount());
+		svg.shape(noteSvg, x, finalY);
 
 	}
 	//do- midi 60 c4
