@@ -4,10 +4,8 @@
 	 id="svg2" inkscape:version="0.91 r13725" sodipodi:docname="noire.svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg"
 	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 6.6 20.2"
 	 style="enable-background:new 0 0 6.6 20.2;" xml:space="preserve">
-<sodipodi:namedview  bordercolor="#666666" borderopacity="1" fit-margin-bottom="0" fit-margin-left="0" fit-margin-right="0" fit-margin-top="0" gridtolerance="10" guidetolerance="10" id="namedview126" inkscape:current-layer="svg2" inkscape:cx="677.92716" inkscape:cy="-57.747597" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-height="1018" inkscape:window-maximized="1" inkscape:window-width="1920" inkscape:window-x="-8" inkscape:window-y="-8" inkscape:zoom="0.63429568" objecttolerance="10" pagecolor="#ffffff" showgrid="false">
-	</sodipodi:namedview>
 <path id="rect76" d="M0.2,3.7h0.2c0.1,0,0.2,0.1,0.2,0.2V20c0,0.1-0.1,0.2-0.2,0.2H0.2C0.1,20.2,0,20.1,0,20V3.9
 	C0,3.8,0.1,3.7,0.2,3.7z"/>
-<path id="path80" inkscape:connector-curvature="0" d="M4.4,0c1.1,0,2.2,0.6,2.2,1.8c0,1.4-1.1,2.4-2.1,3C3.8,5.2,3,5.5,2.2,5.5
+<path id="notehead" inkscape:connector-curvature="0" d="M4.4,0c1.1,0,2.2,0.6,2.2,1.8c0,1.4-1.1,2.4-2.1,3C3.8,5.2,3,5.5,2.2,5.5
 	C1.1,5.5,0,4.9,0,3.7c0-1.4,1.1-2.4,2.1-3C2.8,0.3,3.6,0,4.4,0z"/>
 </svg>

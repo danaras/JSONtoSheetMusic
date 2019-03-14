@@ -4,14 +4,12 @@
 	 id="svg2" inkscape:version="0.91 r13725" sodipodi:docname="triple-croche.svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg"
 	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 6.6 23.9"
 	 style="enable-background:new 0 0 6.6 23.9;" xml:space="preserve">
-<sodipodi:namedview  bordercolor="#666666" borderopacity="1" fit-margin-bottom="0" fit-margin-left="0" fit-margin-right="0" fit-margin-top="0" gridtolerance="10" guidetolerance="10" id="namedview126" inkscape:current-layer="svg2" inkscape:cx="243.20868" inkscape:cy="-26.507791" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-height="1018" inkscape:window-maximized="1" inkscape:window-width="1920" inkscape:window-x="-8" inkscape:window-y="-8" inkscape:zoom="1.7940591" objecttolerance="10" pagecolor="#ffffff" showgrid="false">
-	</sodipodi:namedview>
 <path id="path42" inkscape:connector-curvature="0" d="M0.6,19.6c1.8-1,4.1-2.6,4.1-4.5c0-0.5-0.1-0.9-0.2-1.3c-1.6,1.8-4,3.1-4,5.6
-	V19.6z M5.2,6.5C5.2,6,4.7,5,5.4,5C6,5,6,6,6,6.5c0,0.8-0.2,1.4-0.6,2c0.3,0.8,0.5,1.6,0.5,2.4c0,0.8-0.2,1.4-0.6,2
-	c0.2,0.7,0.3,1.5,0.3,2.2c0,3.6-5,5.1-5,8.6H0.3V8.8h0.3v2.1C2.6,10,5.2,8.6,5.2,6.5z M0.6,15.3c1.9-0.9,4.4-2.3,4.4-4.4
-	c0-0.5-0.1-1.1-0.3-1.6c-1.6,1.8-4.1,3.1-4.1,5.6V15.3z"/>
+	v0.2H0.6z M5.2,6.5C5.2,6,4.7,5,5.4,5C6,5,6,6,6,6.5c0,0.8-0.2,1.4-0.6,2c0.3,0.8,0.5,1.6,0.5,2.4c0,0.8-0.2,1.4-0.6,2
+	c0.2,0.7,0.3,1.5,0.3,2.2c0,3.6-5,5.1-5,8.6H0.3V8.8h0.3v2.1C2.6,10,5.2,8.6,5.2,6.5z M0.6,15.3C2.5,14.4,5,13,5,10.9
+	c0-0.5-0.1-1.1-0.3-1.6c-1.6,1.8-4.1,3.1-4.1,5.6C0.6,14.9,0.6,15.3,0.6,15.3z"/>
 <path id="rect96" d="M0.2,3.7h0.2c0.1,0,0.2,0.1,0.2,0.2v19.8c0,0.1-0.1,0.2-0.2,0.2H0.2c-0.1,0-0.2-0.1-0.2-0.2V3.9
 	C0,3.8,0.1,3.7,0.2,3.7z"/>
-<path id="path100" inkscape:connector-curvature="0" d="M4.4,0c1.1,0,2.2,0.6,2.2,1.8c0,1.4-1.1,2.4-2.1,3C3.8,5.2,3,5.5,2.2,5.5
+<path id="notehead" inkscape:connector-curvature="0" d="M4.4,0c1.1,0,2.2,0.6,2.2,1.8c0,1.4-1.1,2.4-2.1,3C3.8,5.2,3,5.5,2.2,5.5
 	C1.1,5.5,0,4.9,0,3.7c0-1.4,1.1-2.4,2.1-3C2.8,0.3,3.6,0,4.4,0z"/>
 </svg>

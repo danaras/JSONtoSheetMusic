@@ -1,6 +1,15 @@
 import processing.svg.*;
 import java.util.Date;
+import processing.pdf.*;
+PrintWriter output;
+PrintWriter output_detailed;
 
+
+Table sizeTable;
+Table noteYLocationTable;
+Table dieseToggleTable;
+int totalPages;
+float pageTime;
 JSONObject json;
 int ppi = 300;
 int width = 9*ppi; //9*300
@@ -11,13 +20,16 @@ int staffHeight = staffGap*4;
 int staffWidth = width-borderMargin*2;
 int spaceBetweenStaffs = staffHeight*2;
 int numberOfStaffsPerPage = (height-borderMargin*2)/(staffHeight+spaceBetweenStaffs)+1;
-int[] notes = {21,23,24,26,28,29,31,33,35,36,38,40,41,43,45,47,48,50,52,53,55,57,59,60,62,64,65,66,69,71,72,74,76,77,79,81,83,84,86,88,89,91,93,95,96,98,100,101,103,105,107,108};
+// int[] notes = {21,23,24,26,28,29,31,33,35,36,38,40,41,43,45,47,48,50,52,53,55,57,59,60,62,64,65,66,69,71,72,74,76,77,79,81,83,84,86,88,89,91,93,95,96,98,100,101,103,105,107,108};
+// int[] dieseNotes = {22,25,27,30,32,34,37,39,42,44,46,49,51,54,56,58,61,63,66,68,70,73,75,78,80,82,85,87,90,92,94,97,99,102,104,106};
 float noteWidth = 4*staffGap;
 float noteHeight = 4*staffGap;
 // JSONObject noteFiles ={0.008:"note-128.svg",0.016:"note-64.svg",0.032:"note-32.svg",0.064:"note-16.svg",0.128:"note-8.svg",0.256:"note-4.svg",0.512:"note-2.svg",1.024:"note-1.svg"};
 PShape clef;
 
 PGraphics svg;
+PGraphics svgControl;
+
 
 float measuresPerStaff = 6;
 float tempo = 234; //quarter notes per minute
@@ -26,32 +38,49 @@ float staffTime = measureTime*measuresPerStaff;
 
 
 void setup() {
-size(450, 600);
-json = loadJSONObject("midi.json");
+size(900, 1200);
+sizeTable = loadTable("notes_data.csv", "header");
+noteYLocationTable = loadTable("note_locations.csv", "header");
+// output = createWriter("notes_status.txt");
+// output_detailed = createWriter("notes_status_detailed.txt");
+json = loadJSONObject("bread_scene2.json");
 printSvgSizes();
 drawSheetMusic();
-
 }
-void drawStaffLines(int staffGp, int LocY){
-	for (int i=0; i<5; i++){
-		int y = i*staffGp+LocY;
-		svg.line(borderMargin, borderMargin+y, width-borderMargin, borderMargin+y);
+
+
+
+
+void drawMeasureBorders(PGraphics graphics){
+	for (int i=0; i<numberOfStaffsPerPage; i++){
+		for (int j=0; j<measuresPerStaff; j++){
+			float x = borderMargin+staffHeight+(j+1)*(staffWidth-staffHeight)/6;
+			float y =borderMargin+i*(staffHeight+spaceBetweenStaffs);
+			graphics.line(x,y,x,y+staffHeight);
+		}
 	}
 }
-void drawStaffs(){
+
+void drawStaffLines(PGraphics graphics,int staffGp, int LocY){
+	for (int i=0; i<5; i++){
+		int y = i*staffGp+LocY;
+		graphics.line(borderMargin, borderMargin+y, width-borderMargin, borderMargin+y);
+	}
+}
+void drawStaffs(PGraphics graphics){
 	for (int i=0; i<numberOfStaffsPerPage; i++){
 		int yOfStaff = i*(staffHeight+spaceBetweenStaffs);
 		int yOfCleff = i*(staffHeight+spaceBetweenStaffs);
 		float startXCleff = -staffGap;
 		float startYCleff = -2.3*staffGap;
 		// System.out.println(yOfStaff);
-		drawStaffLines(staffGap, i*(staffHeight+spaceBetweenStaffs));
-		drawClefs(startXCleff,startYCleff+i*(staffHeight+spaceBetweenStaffs));
+		drawStaffLines(graphics,staffGap, i*(staffHeight+spaceBetweenStaffs));
+		drawClefs(graphics,startXCleff,startYCleff+i*(staffHeight+spaceBetweenStaffs));
 	}
 }
-void drawClefs(float x, float y){
+void drawClefs(PGraphics graphics,float x, float y){
 	clef = loadShape("clef.svg");
-	svg.shape(clef, borderMargin+x, borderMargin+y, 6*staffGap, 8*staffGap);
+	graphics.shape(clef, borderMargin+x, borderMargin+y, 6*staffGap, 8*staffGap);
 }
 // void isItNote(int midiNote){
 //
@@ -152,98 +181,270 @@ String[] whichNote(float duration){
 	}
 	return fileNames;
 }
-float noteLocationOnStaff(int midiNote){
-	int treble = 67;
-	int g5sol = 79;
-	int f5fa = 77;
-	int f5faIndex = 33;
-	int d4re = 62;
-	int d4reIndex = 24;
-	float y = -noteHeight/8;
-	//TODO: add sharps and return notes to natural
-	for (int i=0; i<notes.length; i++){
-		if(midiNote==notes[i]){
-			// println("yeees");
-			y += (i-f5faIndex)*staffGap/2;
-			break;
-		}
-		else{
-			y = -noteHeight/8;
-		}
-		// if(f5fa == notes[i]){
-		// 	println(i);
-		// }
-	}
-	// println(midiNote+", "+y);
-	return y;
+void dieseTableSetup(){
+	dieseToggleTable = new Table();
+
+	dieseToggleTable.addColumn("NoteName");
+	dieseToggleTable.addColumn("DieseValueTracker");
+
 }
-void drawNotes(JSONObject note){
+String dieseToggle(TableRow noteInfo){
+	//this is where we will keep track whether a note changed state between being sharp or not
+	String noteName = noteInfo.getString("noteName");
+	noteName = noteName.replace("Diese","");
+	// println(noteName);
+	String dieseValue = noteInfo.getString("diese");
+	String returnValue; //value indicating if the note has changed state or not, if yes to what: all possible values {diese, natural, no}
+	TableRow dieseToggleRow = dieseToggleTable.findRow(noteName, "NoteName");
+	if (dieseToggleRow == null){
+			TableRow newRow = dieseToggleTable.addRow();
+		  newRow.setString("NoteName", noteName);
+		  newRow.setString("DieseValueTracker", dieseValue);
+			if (dieseValue.equals("true")){
+				returnValue = "diese";
+				// output_detailed.println("added new note: "+noteName+", "+returnValue);
+
+			} else {
+				returnValue = "no";
+				// output_detailed.println("added new note: "+noteName+", "+returnValue);
+
+			}
+	} else {
+		// println("yeeeeaasss--------------------");
+		String dieseToggleValue =  dieseToggleRow.getString("DieseValueTracker");
+		if (dieseToggleValue.equals(dieseValue)){
+			returnValue = "no";
+			// output_detailed.println("note found: "+noteName+", "+returnValue);
+		}else{
+			if (dieseValue.equals("true")){
+				returnValue = "diese";
+				dieseToggleRow.setString("DieseValueTracker", dieseValue);
+				// output_detailed.println("note found: "+noteName+", "+returnValue);
+			} else {
+				returnValue = "natural";
+				// output_detailed.println("note found: "+noteName+", "+returnValue);
+				dieseToggleRow.setString("DieseValueTracker", dieseValue);
+
+			}
+		}
+	}
+return returnValue;
+}
+// TODO adjust the location of the note after notes are in the correct size
+//TODO return string array for [y,isitdiese]
+String[] noteLocationOnStaff(int midiNote){
+	// i got midi to note conversion info from the notes.gif file that is in data/ folder of the project
+	int baseDo = 60;
+	float baseDoY = 5*staffGap;
+	float yDiff;
+	float y;
+	String noteName;
+	String diese;
+	TableRow resultNoteLocation;
+	if(midiNote>=baseDo){
+		// println("noteInOctave: "+midiNote+", "+noteInOctave)
+		int noteInOctave = (midiNote-baseDo) % 12;
+		if (noteInOctave==12){
+			noteInOctave = 0;
+		}
+		int difOctave = (midiNote-baseDo)/12;
+		resultNoteLocation = noteYLocationTable.findRow(str(noteInOctave), "noteValue");
+		yDiff = resultNoteLocation.getFloat("ynumberofStaffGaps");
+		noteName = resultNoteLocation.getString("noteName");
+		diese = resultNoteLocation.getString("diese");
+		y = baseDoY-difOctave*3.5*staffGap-yDiff*staffGap;
+	}
+	else{
+		int difOctave = (baseDo-midiNote)/12;
+
+		int noteInOctave =12-((baseDo-midiNote) % 12);
+		if (noteInOctave==12){
+			noteInOctave = 0;
+		}
+		// println("noteInOctave: "+midiNote+", "+noteInOctave);
+		resultNoteLocation = noteYLocationTable.findRow(str(noteInOctave), "noteValue");
+		yDiff = 3.5-resultNoteLocation.getFloat("ynumberofStaffGaps");
+		noteName = resultNoteLocation.getString("noteName");
+		diese = resultNoteLocation.getString("diese");
+		y = baseDoY+difOctave*3.5*staffGap+yDiff*staffGap;
+	}
+	String dieseToggleValue = dieseToggle(resultNoteLocation);
+	String[] stuffToReturn = {str(y), noteName, dieseToggleValue};
+	return stuffToReturn;
+}
+
+
+	// //TODO: add sharps and return notes to natural
+	// for (int i=0; i<notes.length; i++){
+	// 	if(midiNote==notes[i]){
+	// 		// println("yeees");
+	// 		y += (i-f5faIndex)*staffGap/2;
+	// 		break;
+	// 	}
+	// 	else{
+	// 		y = -noteHeight/8;
+	// 	}
+	// 	// if(f5fa == notes[i]){
+	// 	// 	println(i);
+	// 	// }
+	// }
+	// // println(midiNote+", "+y);
+	// return y;
+
+void drawExtraStaffLines(float noteYonStaff, float y, float x, float anchorPointX){
+println("Here is the noteYonStaff: "+str(int(noteYonStaff)));
+int amountOfStaff = int(noteYonStaff)/staffGap;
+if (amountOfStaff<0){
+	for(int i=0; i>amountOfStaff-1; i--){
+		svg.line(x-anchorPointX-staffGap/4,(i*staffGap)+y,x+2*staffGap/3,(i*staffGap)+y);
+	}
+}else if(amountOfStaff>0){
+	println("Here is the amountofStaff: "+str(amountOfStaff));
+
+	for(int i=0; i<amountOfStaff+1; i++){
+		svg.line(x-anchorPointX-staffGap/4,(i*staffGap)+y,x+2*staffGap/3,(i*staffGap)+y);
+	}
+}
+
+}
+void drawNotes(JSONObject note, int pageNo){
 	// println();
+// Unravel JSON data into variables
 	String name = note.getString("name");
 	int midi = note.getInt("midi");
 	float time = note.getFloat("time");
 	float velocity = note.getFloat("velocity");
 	float duration = note.getFloat("duration");
 	// println(time);
-	//let's print only first page for now
+	//amount of time 1 page takes to play
 	float pageTime = numberOfStaffsPerPage*staffTime;
+	// int pageNumber = 1+int(time/pageTime);
 	// println(time+", "+pageTime);
-	if(time<=pageTime){
+	//let's print only first page for now
+	if((time<=pageTime*(pageNo+1))&&(time>pageTime*(pageNo))){
+		time = time % pageTime;
+
 		// float m = map(time, 0, 100, 0, width);
 		// println(time);
 		int staffNo = int(time/staffTime)+1;
 		// println(time+", staffno: "+staffNo);
 		float y = (staffNo-1)*(staffHeight+spaceBetweenStaffs)+borderMargin;
-		float noteYonStaff = noteLocationOnStaff(midi);
+		String[] noteData = noteLocationOnStaff(midi);
+		float noteYonStaff = float(noteData[0]);
+		String noteName = noteData[1];
+		String dieseToggleValue = noteData[2];
+		println(dieseToggleValue);
 		float finalY = noteYonStaff +y;
+
 		float x = map(time-(staffNo-1)*staffTime, 0, staffTime, borderMargin+staffHeight, width-borderMargin-4*staffGap);
+		drawMeasureBorders(svg);
+		// drawMeasureBorders(svgControl);
+		// if (noteYonStaff<0){
+		// 	for (int i=1; i<noteYonStaff/staffGap; i--){
+		// 		svg.line(x-staffGap/3,(i*staffGap)+finalY,x+2*staffGap/3,(i*staffGap)+finalY);
+		// 	}
+		// }else{
+		// 	for (int i=1; i<noteYonStaff/staffGap; i++){
+		// 		svg.line(x-staffGap/3,(i*staffGap)+finalY,x+2*staffGap/3,(i*staffGap)+finalY);
+		// 	}
+		// }
 		String[] notefiles = whichNote(duration);
 		String filename;
-		if(noteLocationOnStaff(midi)>staffHeight/2){
+		float sizeRatio;
+		float anchorRatioX;
+		float anchorRatioY;
+		if(noteYonStaff>staffHeight/2){
 			filename = notefiles[0];
 		}else{
 			filename = notefiles[1];
 		}
-		PShape noteSvg=loadShape("notes/"+filename);
-		noteSvg.disableStyle();
-		noteSvg.setFill(color(0,0,0));
-		svg.fill(0,0,0);
-		svg.noStroke();
-		// for(int i =0; i<noteSvg.getChildCount(); i++){
-		// 	println(i);
-		// }
-		// println(midi+", "+noteSvg.getChildCount());
-		svg.shape(noteSvg, x, finalY);
+		TableRow result = sizeTable.findRow(filename, "fileName");
+		sizeRatio = result.getFloat("sizeRatio");
+		anchorRatioX = result.getFloat("anchorRatioX");
+		anchorRatioY = result.getFloat("anchorRatioY");
+		PShape noteSvg = loadShape("notes/"+filename);
+		PShape dieseSVG = loadShape("notes/Dièse.svg");
+		PShape naturalSVG = loadShape("notes/Becarre.svg");
+		float finalWidthDiese = 3*dieseSVG.width*0.72;
+		float finalHeightDiese = 3*dieseSVG.height*0.72;
+		float anchorPointXDiese = finalWidthDiese*0.5;
+		float anchorPointYDiese = finalHeightDiese*0.5;
+		float finalWidthNatural = 3*naturalSVG.width*0.72;
+		float finalHeightNatural = 3*naturalSVG.height*0.72;
+		float anchorPointXNatural = finalWidthNatural*0.5;
+		float anchorPointYNatural = finalHeightNatural*0.5;
+		float finalWidth = 3*noteSvg.width*sizeRatio;
+		float finalHeight = 3*noteSvg.height*sizeRatio;
+		float anchorPointX = finalWidth*anchorRatioX;
+		float anchorPointY = finalHeight*anchorRatioY;
+		// for (int i=0; i<finalY)
+		drawExtraStaffLines(noteYonStaff,y,x,anchorPointX);
+
+		svg.shape(noteSvg, x-anchorPointX, finalY-anchorPointY, finalWidth, finalHeight);
+		if (dieseToggleValue.equals("diese")){
+				svg.shape(dieseSVG, x-anchorPointXDiese-1.5*staffGap, finalY-anchorPointYDiese, finalWidthDiese, finalHeightDiese);
+		}else if(dieseToggleValue.equals("natural")){
+				svg.shape(naturalSVG, x-anchorPointXNatural-1.5*staffGap, finalY-anchorPointYNatural, finalWidthNatural, finalHeightNatural);
+		}
+		// println(staffNo);
+		//Uncomment for printing the note names for control
+		// if(staffNo==1){
+		// 		svg.fill(50);
+		// }else if(staffNo==2){
+		// 		svg.fill(#2FF3E0);
+		// }else if(staffNo==3){
+		// 		svg.fill(#F8D210);
+		// }else if(staffNo==4){
+		// 		svg.fill(#FA26A0);
+		// }else if(staffNo==5){
+		// 		svg.fill(#F51720);
+		// }else{
+		// 		svg.fill(50);
+		// 	}
+		// svg.textSize(15);
+		// svg.text(noteName, x-4, finalY);
+		// output.println(noteName+", "+dieseToggleValue);
 
 	}
-	//do- midi 60 c4
-	//re- midi 62 d4
-	//mi
-	//fa
-	//sol
-	//la
-	//si
-}
-void drawSheetMusic(){
-	svg = createGraphics(width, height, SVG, "output.svg");
-	svg.beginDraw();
-	svg.background(255,255,255);
-	drawStaffs();
-	JSONArray tracks = json.getJSONArray("tracks");
-	JSONObject track1 = tracks.getJSONObject(1);
-	JSONArray notes = track1.getJSONArray("notes");
-	for (int i = 0; i < notes.size(); i++) {
-			JSONObject note = notes.getJSONObject(i);
-			drawNotes(note);
-					// println("name: "+name + ", time: " + time + ", duration: " + duration);
-		}
-	svg.dispose();
-	svg.endDraw();
-	PShape finalDrawing = loadShape("output.svg");
-	shape(finalDrawing,0,0,450,600);
-	// image(svg, 0, 0);
 
 }
+void drawPage(){
+
+}
+void drawSheetMusic(){
+	dieseTableSetup();
+
+	JSONArray tracks = json.getJSONArray("tracks");
+	JSONObject track1 = tracks.getJSONObject(0);
+	JSONArray notes = track1.getJSONArray("notes");
+	float fullDuration = json.getFloat("duration");
+	println(fullDuration);
+ 	pageTime= numberOfStaffsPerPage*staffTime;
+	totalPages = 1+int(fullDuration/pageTime);
+	for (int pageNo = 0; pageNo<totalPages; pageNo++){
+		svg = createGraphics(width, height, PDF, "output"+str(pageNo)+".pdf");
+		svg.beginDraw();
+		svg.background(255,255,255);
+		drawStaffs(svg);
+		for (int i = 0; i < notes.size(); i++) {
+				JSONObject note = notes.getJSONObject(i);
+				drawNotes(note, pageNo);
+			}
+		svg.dispose();
+		svg.endDraw();
+	}
+
+	// output.flush(); // Writes the remaining data to the file
+  // output.close();
+	// output_detailed.flush(); // Writes the remaining data to the file
+	// output_detailed.close();
+	// PShape finalDrawing = loadShape("output.pdf");
+	// shape(finalDrawing,0,0,900,1200);
+
+
+}
+
+
 // Sketch prints:
 // 0, Panthera leo, Lion
 // void draw() {
