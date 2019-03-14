@@ -10,6 +10,7 @@ Table noteYLocationTable;
 Table dieseToggleTable;
 int totalPages;
 float pageTime;
+float firstPageTime;
 JSONObject json;
 int ppi = 300;
 int width = 9*ppi; //9*300
@@ -51,11 +52,24 @@ drawSheetMusic();
 
 
 
-void drawMeasureBorders(PGraphics graphics){
-	for (int i=0; i<numberOfStaffsPerPage; i++){
+void drawMeasureBorders(PGraphics graphics, int pageNumber){
+		int numberOfStaffsPerThisPage;
+	if (pageNumber ==0){
+		numberOfStaffsPerThisPage = numberOfStaffsPerPage - 2;
+	}else{
+		numberOfStaffsPerThisPage = numberOfStaffsPerPage;
+
+	}
+	for (int i=0; i<numberOfStaffsPerThisPage; i++){
 		for (int j=0; j<measuresPerStaff; j++){
 			float x = borderMargin+staffHeight+(j+1)*(staffWidth-staffHeight)/6;
-			float y =borderMargin+i*(staffHeight+spaceBetweenStaffs);
+			float y;
+			if (pageNumber == 0){
+				y =borderMargin+(2+i)*(staffHeight+spaceBetweenStaffs);
+			}
+			else{
+				y =borderMargin+i*(staffHeight+spaceBetweenStaffs);
+			}
 			graphics.line(x,y,x,y+staffHeight);
 		}
 	}
@@ -67,15 +81,31 @@ void drawStaffLines(PGraphics graphics,int staffGp, int LocY){
 		graphics.line(borderMargin, borderMargin+y, width-borderMargin, borderMargin+y);
 	}
 }
-void drawStaffs(PGraphics graphics){
-	for (int i=0; i<numberOfStaffsPerPage; i++){
-		int yOfStaff = i*(staffHeight+spaceBetweenStaffs);
-		int yOfCleff = i*(staffHeight+spaceBetweenStaffs);
+void drawStaffs(PGraphics graphics, int pageNumber){
+	int numberOfStaffsPerThisPage;
+
+	if (pageNumber ==0){
+		numberOfStaffsPerThisPage = numberOfStaffsPerPage - 2;
+	}else{
+		numberOfStaffsPerThisPage = numberOfStaffsPerPage;
+
+	}
+	for (int i=0; i<numberOfStaffsPerThisPage; i++){
+
+		int yOfStaff;
+		int yOfCleff;
 		float startXCleff = -staffGap;
 		float startYCleff = -2.3*staffGap;
+		if (pageNumber==0){
+			yOfStaff = (2+i)*(staffHeight+spaceBetweenStaffs);
+			yOfCleff = (2+i)*(staffHeight+spaceBetweenStaffs);
+		}else{
+			yOfStaff = i*(staffHeight+spaceBetweenStaffs);
+			yOfCleff = i*(staffHeight+spaceBetweenStaffs);
+		}
 		// System.out.println(yOfStaff);
-		drawStaffLines(graphics,staffGap, i*(staffHeight+spaceBetweenStaffs));
-		drawClefs(graphics,startXCleff,startYCleff+i*(staffHeight+spaceBetweenStaffs));
+		drawStaffLines(graphics,staffGap, yOfStaff);
+		drawClefs(graphics,startXCleff,startYCleff+yOfCleff);
 	}
 }
 void drawClefs(PGraphics graphics,float x, float y){
@@ -307,12 +337,12 @@ if (amountOfStaff<0){
 }
 
 }
-void drawNotes(JSONObject note, int pageNo){
+void drawNotes(JSONObject note, int pageNumber){
 	// println();
 // Unravel JSON data into variables
 	String name = note.getString("name");
 	int midi = note.getInt("midi");
-	float time = note.getFloat("time");
+	float firstTime = note.getFloat("time");
 	float velocity = note.getFloat("velocity");
 	float duration = note.getFloat("duration");
 	// println(time);
@@ -321,12 +351,30 @@ void drawNotes(JSONObject note, int pageNo){
 	// int pageNumber = 1+int(time/pageTime);
 	// println(time+", "+pageTime);
 	//let's print only first page for now
-	if((time<=pageTime*(pageNo+1))&&(time>pageTime*(pageNo))){
-		time = time % pageTime;
+	// if(firstTime<=firstPageTime){
+	// 	println("------------------------------------------------------------------------------");
+	// 	println(firstTime);
+	// 	// println(pageTime);
+	// 	pageTime = firstPageTime;
+	// 	println(pageTime);
+	//
+	// }else{
+	// 	firstTime = firstTime-firstPageTime;
+	// 	pageNumber=pageNumber-1;
+	// }
+	firstTime = 2*staffTime+firstTime;
+	if((firstTime<=pageTime*(pageNumber+1))&&(firstTime>pageTime*(pageNumber))){
+		// if(pageNumber==0){
+		println(firstTime);
+		float	time = firstTime % pageTime;
+		// }
 
 		// float m = map(time, 0, 100, 0, width);
 		// println(time);
 		int staffNo = int(time/staffTime)+1;
+		// if(firstTime<firstPageTime){
+		// 	staffNo = staffNo+2;
+		// }
 		// println(time+", staffno: "+staffNo);
 		float y = (staffNo-1)*(staffHeight+spaceBetweenStaffs)+borderMargin;
 		String[] noteData = noteLocationOnStaff(midi);
@@ -335,19 +383,8 @@ void drawNotes(JSONObject note, int pageNo){
 		String dieseToggleValue = noteData[2];
 		println(dieseToggleValue);
 		float finalY = noteYonStaff +y;
-
 		float x = map(time-(staffNo-1)*staffTime, 0, staffTime, borderMargin+staffHeight, width-borderMargin-4*staffGap);
-		drawMeasureBorders(svg);
-		// drawMeasureBorders(svgControl);
-		// if (noteYonStaff<0){
-		// 	for (int i=1; i<noteYonStaff/staffGap; i--){
-		// 		svg.line(x-staffGap/3,(i*staffGap)+finalY,x+2*staffGap/3,(i*staffGap)+finalY);
-		// 	}
-		// }else{
-		// 	for (int i=1; i<noteYonStaff/staffGap; i++){
-		// 		svg.line(x-staffGap/3,(i*staffGap)+finalY,x+2*staffGap/3,(i*staffGap)+finalY);
-		// 	}
-		// }
+		drawMeasureBorders(svg,pageNumber);
 		String[] notefiles = whichNote(duration);
 		String filename;
 		float sizeRatio;
@@ -386,7 +423,6 @@ void drawNotes(JSONObject note, int pageNo){
 		}else if(dieseToggleValue.equals("natural")){
 				svg.shape(naturalSVG, x-anchorPointXNatural-1.5*staffGap, finalY-anchorPointYNatural, finalWidthNatural, finalHeightNatural);
 		}
-		// println(staffNo);
 		//Uncomment for printing the note names for control
 		// if(staffNo==1){
 		// 		svg.fill(50);
@@ -408,7 +444,21 @@ void drawNotes(JSONObject note, int pageNo){
 	}
 
 }
-void drawPage(){
+void drawPageNo(int pageNumber){
+	pageNumber = pageNumber+1;
+	float pageNoX;
+	float pageNoY;
+
+		if(pageNumber % 2 == 0){
+			pageNoX = staffHeight;
+			pageNoY = staffHeight;
+		}else{
+			pageNoX = width - staffHeight-40;
+			pageNoY = staffHeight;
+		}
+		svg.fill(50);
+		svg.textSize(40);
+		svg.text(pageNumber, pageNoX, pageNoY+40);
 
 }
 void drawSheetMusic(){
@@ -420,12 +470,18 @@ void drawSheetMusic(){
 	float fullDuration = json.getFloat("duration");
 	println(fullDuration);
  	pageTime= numberOfStaffsPerPage*staffTime;
-	totalPages = 1+int(fullDuration/pageTime);
+	firstPageTime= (numberOfStaffsPerPage-2)*staffTime;
+	totalPages = 2+int(fullDuration/pageTime);
 	for (int pageNo = 0; pageNo<totalPages; pageNo++){
+		println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		println(pageNo);
 		svg = createGraphics(width, height, PDF, "output"+str(pageNo)+".pdf");
 		svg.beginDraw();
 		svg.background(255,255,255);
-		drawStaffs(svg);
+		drawStaffs(svg, pageNo);
+		if (pageNo>0){
+			drawPageNo(pageNo);
+		}
 		for (int i = 0; i < notes.size(); i++) {
 				JSONObject note = notes.getJSONObject(i);
 				drawNotes(note, pageNo);
